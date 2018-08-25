@@ -1,0 +1,42 @@
+diff -Nur pyang-1.7.5/pyang/plugins/lint.py pyang-1.7.5b/pyang/plugins/lint.py
+--- pyang-1.7.5/pyang/plugins/lint.py	2018-08-25 15:10:46.930275736 +0100
++++ pyang-1.7.5b/pyang/plugins/lint.py	2018-08-25 16:02:13.219844064 +0100
+@@ -19,6 +19,16 @@
+ 
+ class LintPlugin(plugin.PyangPlugin):
+     def __init__(self):
++        skillCheck = False
++        for name in [ "/tmp/skill_check", "/skill_check" ]:
++            try:
++                tempCheck = open(name, "r")
++                skillCheck = True
++            except:
++                pass
++        self.skillCheckNamespace = skillCheck  # Patched
++        self.skillCheckModuleName = skillCheck  # Patched
++
+         plugin.PyangPlugin.__init__(self)
+         ## Other plugins (e.g., ietf.py) can derive from this plugin
+         ## and override these variables.
+@@ -108,13 +118,15 @@
+                 'grammar', ['*'],
+                 lambda ctx, s: v_chk_hyphenated_names(ctx, s))
+ 
+-        statements.add_validation_fun(
+-            'grammar', ['namespace'],
+-            lambda ctx, s: v_chk_namespace(ctx, s, self.namespace_prefixes))
++        if self.skillCheckNamespace:
++            statements.add_validation_fun(
++                'grammar', ['namespace'],
++                lambda ctx, s: v_chk_namespace(ctx, s, self.namespace_prefixes))
+ 
+-        statements.add_validation_fun(
+-            'grammar', ['module', 'submodule'],
+-            lambda ctx, s: v_chk_module_name(ctx, s, self.modulename_prefixes))
++        if self.skillCheckModuleName:
++            statements.add_validation_fun(
++                'grammar', ['module', 'submodule'],
++                lambda ctx, s: v_chk_module_name(ctx, s, self.modulename_prefixes))
+ 
+         statements.add_validation_fun(
+             'strict', ['include'],
