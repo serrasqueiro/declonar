@@ -1,0 +1,20 @@
+tweb
++++
+Inspired on something robust!
+
+To test this, run:
+	./tweb -u $USER -c '*'.cgi -nov -p 8080 -D -d ..
+
+
+You can specify an alternate lockfile(), setenv LOCKOUT_FILE, e.g.
+	export LOCKOUT_FILE=/tmp/${USER}_lockfile.dat
+
+
+Files with an executable bit (on 'others'), S_IXOTH (octal 00001) are
+requested to be 'cgi's, otherwise the following warning was generated:
+	Dec 26 23:00:15 HOST tweb[2564]: 127.0.0.1 URL "/Folder.jpg" is executable but isn't CGI
+The following exceptions are allowed now, by default:
+	libhttpd.c:#define ALLOWED_EXE_MASK_EXT
+		*.mp3|*.jpg|*.jpeg
+	and the corresponding upper-case extensions.
+

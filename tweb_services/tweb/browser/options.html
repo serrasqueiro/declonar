@@ -1,0 +1,568 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <title>Configuration Options</title>
+  </head>
+
+  <body>
+
+<!--AD_START-->
+<div align="center">
+<script type="text/javascript"><!--
+google_ad_client = "pub-5759188606642566";
+/* 728x90, created 9/23/09 */
+google_ad_slot = "8720321611";
+google_ad_width = 728;
+google_ad_height = 90;
+google_ad_channel = "8465122053";
+//-->
+</script>
+<script type="text/javascript"
+src="https://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+</div>
+<hr class="thick">
+<!--AD_END-->
+
+    <img class="logo" width="111" height="64" src="anvil_thttpd.gif" alt="anvil">
+    <h3>Configuration Options</h3>
+
+    <p>
+      This is just an HTMLized version of config.h.
+    </p>
+
+    <uL>
+      <li> <a href="#CGI_PATTERN">CGI_PATTERN</a> </li>
+      <li> <a href="#CGI_TIMELIMIT">CGI_TIMELIMIT</a> </li>
+      <li> <a href="#IDLE_READ_TIMELIMIT">IDLE_READ_TIMELIMIT</a> </li>
+      <li> <a href="#IDLE_SEND_TIMELIMIT">IDLE_SEND_TIMELIMIT</a> </li>
+      <li> <a href="#LOG_FACILITY">LOG_FACILITY</a> </li>
+      <li> <a href="#TILDE_MAP_1">TILDE_MAP_1</a> and <A HREF="#TILDE_MAP_2">TILDE_MAP_2</A> </li>
+      <li> <a href="#AUTH_FILE">AUTH_FILE</a> </li>
+      <li> <a href="#DEFAULT_CHARSET">DEFAULT_CHARSET</a> </li>
+      <li> <a href="#SERVER_NAME">SERVER_NAME</a> and <A HREF="#SERVER_NAME_LIST">SERVER_NAME_LIST</A> </li>
+      <li> <a href="#SHOW_SERVER_VERSION">SHOW_SERVER_VERSION</a> </li>
+      <li> <a href="#ALWAYS_CHROOT">ALWAYS_CHROOT</a> </li>
+      <li> <a href="#ALWAYS_VHOST">ALWAYS_VHOST</a> </li>
+      <li> <a href="#ALWAYS_GLOBAL_PASSWD">ALWAYS_GLOBAL_PASSWD</a> </li>
+      <li> <a href="#VHOST_DIRLEVELS">VHOST_DIRLEVELS</a> </li>
+      <li> <a href="#DEFAULT_USER">DEFAULT_USER</a> </li>
+      <li> <a href="#USE_USER_DIR">USE_USER_DIR</a> </li>
+      <li> <a href="#EXPLICIT_ERROR_PAGES">EXPLICIT_ERROR_PAGES</a> </li>
+      <li> <a href="#ERR_DIR">ERR_DIR</a> </li>
+      <li> <a href="#ERR_APPEND_SERVER_INFO">ERR_APPEND_SERVER_INFO</a> </li>
+      <li> <a href="#CGI_NICE">CGI_NICE</a> </li>
+      <li> <a href="#CGI_PATH">CGI_PATH</a> </li>
+      <li> <a href="#CGI_LD_LIBRARY_PATH">CGI_LD_LIBRARY_PATH</a> </li>
+      <li> <a href="#OCCASIONAL_TIME">OCCASIONAL_TIME</a> </li>
+      <li> <a href="#STATS_TIME">STATS_TIME</a> </li>
+      <li> <a href="#DESIRED_MAX_MAPPED_FILES">DESIRED_MAX_MAPPED_FILES</a> </li>
+      <li> <a href="#DESIRED_MAX_MAPPED_BYTES">DESIRED_MAX_MAPPED_BYTES</a> </li>
+      <li> <a href="#CGI_BYTECOUNT">CGI_BYTECOUNT</a> </li>
+      <li> <a href="#DEFAULT_PORT">DEFAULT_PORT</a> </li>
+      <li> <a href="#INDEX_NAMES">INDEX_NAMES</a> </li>
+      <li> <a href="#GENERATE_INDEXES">GENERATE_INDEXES</a> </li>
+      <li> <a href="#LOG_UNKNOWN_HEADERS">LOG_UNKNOWN_HEADERS</a> </li>
+      <li> <a href="#FLUSH_LOG_EVERY_TIME">FLUSH_LOG_EVERY_TIME</a> </li>
+      <li> <a href="#THROTTLE_TIME">THROTTLE_TIME</a> </li>
+      <li> <a href="#LISTEN_BACKLOG">LISTEN_BACKLOG</a> </li>
+      <li> <a href="#MAXTHROTTLENUMS">MAXTHROTTLENUMS</a> </li>
+      <li> <a href="#SPARE_FDS">SPARE_FDS</a> </li>
+      <li> <a href="#LINGER_TIME">LINGER_TIME</a> </li>
+      <li> <a href="#MAX_LINKS">MAX_LINKS</a> </li>
+      <li> <a href="#MIN_WOULDBLOCK_DELAY">MIN_WOULDBLOCK_DELAY</a> </li>
+    </ul>
+
+    <hr>
+
+    <!--
+
+    <h4><a name="CC">CC</a></h4>
+    <p>
+    The C compiler to use.
+    Typical values are "cc" and "gcc".
+
+    <h4><a name="SYSVLIBS">SYSVLIBS</a></h4>
+    <p>
+    Uncomment this if you're running a SysV OS such as Solaris 2.x.
+
+    <h4><a name="CFLAGS">CFLAGS</a></h4>
+    <p>
+    The C flags to use.
+    Typical values are "-O" and "-g".
+
+    <h4><a name="LDFLAGS">LDFLAGS</a></h4>
+    <p>
+    The linker flags to use.
+    Typical values are "-s" and "-g".
+
+    <h4><a name="STATICFLAG">STATICFLAG</a></h4>
+    <p>
+    CGI programs should be statically linked, so that you don't
+    have to bother with copying in shared libraries when setting up a
+    chroot() tree.  Uncomment the correct flag for your compiler.
+    Typical values are "-static" and "-Bstatic".
+
+    <h4><a name="BINDIR">BINDIR</a></h4>
+    <p>
+    Directory for public executables.
+    A typical value is "/usr/local/bin".
+
+    <h4><a name="ETCDIR">ETCDIR</a></h4>
+    <p>
+    Directory for daemon executable.
+    A typical value is "/usr/local/sbin".
+
+    <h4><a name="WEBDIR">WEBDIR</a></h4>
+    <p>
+    Directory tree that thttpd will run in.  This is so that the
+    makeweb program can know what directory to make subdirs in.  It also
+    affects the <a href="#CGIBINDIR">CGIBINDIR</a> definition below.
+    A typical value is "/usr/etc/www".
+
+    <h4><a name="WEBGROUP">WEBGROUP</a></h4>
+    <p>
+    The group that the web directory belongs to.  This is so that
+    the makeweb program can be installed set-group-id to that group, and make
+    subdirectories.  If you're not going to use makeweb, ignore this.
+    A typical value is "www".
+
+    <h4><a name="CGIBINDIR">CGIBINDIR</a></h4>
+    <p>
+    Directory for CGI executables.
+    A typical value is "$(<a href="#WEBDIR">WEBDIR</a>)/cgi-bin".
+
+    <h4><a name="MANDIR">MANDIR</a></h4>
+    <p>
+    Directory tree for man pages.
+    A typical value is "/usr/local/man".
+
+    <hr>
+
+    -->
+
+    <h4><a name="CGI_PATTERN">CGI_PATTERN</a></h4>
+
+    <p>
+      CGI programs must match this pattern to get executed.  It's
+      a simple shell-style filename pattern, with ? and *, or multiple such
+      patterns separated by |.  The patterns get checked against the filename
+      part of the incoming URL.
+    </p>
+    <p>
+      Restricting CGI programs to a single directory lets the site administrator
+      review them for security holes, and is strongly recommended.  If there
+      are individual users that you trust, you can enable their directories too.
+    </p>
+    <p>
+      You can also specify a CGI pattern on the command line, with the -c flag.
+      Such a pattern overrides this compiled-in default.
+    </p>
+    <p>
+      If no CGI pattern is specified, neither here nor on the command line,
+      then CGI programs cannot be run at all.  If you want to disable CGI
+      as a security measure that's how you do it, just don't define any
+      pattern here and don't run with the -c flag.
+    </p>
+    <p>
+      Some sample patterns.
+    </p>
+    <dl>
+      <dt> "/cgi-bin/*" </dt>
+      <dd>
+        Allow programs only in one central directory.
+      </dd>
+      <dt> "/cgi-bin/*|/jef/**" </dt>
+      <dd>
+        Allow programs in a central directory, or anywhere in a trusted user's tree.
+      </dd>
+      <dt> "**.cgi" </dt>
+      <dd>
+        Allow any program ending with a .cgi.
+      </dd>
+      <dt> "/*/cgi-bin/*" </dt>
+      <dd>
+        When virtual hosting, enable the central directory on every host.
+      </dd>
+    </dl>
+
+    <h4><a name="CGI_TIMELIMIT">CGI_TIMELIMIT</a></h4>
+    <p>
+      How many seconds to allow CGI programs to run before killing
+      them.  This is in case someone writes a CGI program that goes into an
+      infinite loop, or does a massive database lookup that would take hours,
+      or whatever.  If you don't want any limit, comment this out, but that's
+      probably a really bad idea.
+    </p>
+    <p>
+      A typical value is 300.
+    </p>
+
+    <h4><a name="IDLE_READ_TIMELIMIT">IDLE_READ_TIMELIMIT</a></h4>
+    <p>
+      How many seconds to allow for reading the initial request
+      on a new connection.
+      A typical value is 300.
+    </p>
+
+    <h4><a name="IDLE_SEND_TIMELIMIT">IDLE_SEND_TIMELIMIT</a></h4>
+    <p>
+      How many seconds before an idle connection gets closed.
+      A typical value is 300.
+    </p>
+
+    <h4><a name="LOG_FACILITY">LOG_FACILITY</a></h4>
+    <p>
+      The syslog facility to use.  Using this you can set up your
+      syslog.conf so that all thttpd messages go into a separate file.
+      Note that even if you use the -l command line flag to send logging to a
+      file, errors still get sent via syslog.
+      A typical value is LOG_DAEMON.
+    </p>
+
+    <h4><a name="TILDE_MAP_1">TILDE_MAP_1</a> and <a name="TILDE_MAP_2">TILDE_MAP_2</a></h4>
+    <p>
+      Tilde mapping.  Many URLs use ~username to indicate a
+      user's home directory.  thttpd provides two options for mapping
+      this construct to an actual filename.
+    </p>
+    <p>
+      1) Map ~username to &lt;prefix&gt;/username.  This is the recommended choice.
+      Each user gets a subdirectory in the main chrootable web tree, and
+      the tilde construct points there.  The prefix could be something
+      like "users", or it could be empty.  See also the makeweb program
+      for letting users create their own web subdirectories.
+    </p>
+    <p>
+      2) Map ~username to &lt;user's homedir&gt;/&lt;postfix&gt;.  The postfix would be
+      the name of a subdirectory off of the user's actual home dir, something
+      like "public_html".  This is what NCSA and other servers do.  The problem
+      is, you can't do this and chroot() at the same time, so it's inherently
+      a security hole.  This is strongly dis-recommended, but it's here because
+      some people really want it.  Use at your own risk.
+    </p>
+    <p>
+      You can also leave both options undefined, and thttpd will not do
+      anything special about tildes.  Enabling both options is an error.
+    </p>
+    <p>
+      Typical values, if they're defined, are "users" for TILDE_MAP_1
+      and "public_html" for TILDE_MAP_2.
+    </p>
+
+    <h4><a name="AUTH_FILE">AUTH_FILE</a></h4>
+    <p>
+      The file to use for authentication.  If this is defined then
+      thttpd checks for this file in the local directory before every fetch.
+      If the file exists then authentication is done, otherwise the fetch
+      proceeds as usual.
+    </p>
+    <p>
+      If you leave this undefined then thttpd will not implement authentication
+      at all and will not check for auth files, which saves a bit of CPU time.
+    </p>
+    <p>
+      A typical value is ".htpasswd".
+    </p>
+
+    <h4><a name="DEFAULT_CHARSET">DEFAULT_CHARSET</a></h4>
+    <p>
+      The default character set name to use with text MIME types.
+      This gets substituted into the MIME types where they have a "%s".
+    </p>
+    <p>
+      You can override this in the config file with the "charset" setting,
+      or on the command like with the -T flag.
+    </p>
+    <p>
+      A typical value is "UTF-8".
+    </p>
+
+    <h4><a name="SERVER_NAME">SERVER_NAME</a> and <a name="SERVER_NAME_LIST">SERVER_NAME_LIST</a></h4>
+    <p>
+      This controls the SERVER_NAME environment variable that gets
+      passed to CGI programs.  By default thttpd does a gethostname(), which
+      gives the host's canonical name.  If you want to always use some other name
+      you can define it here.
+    </p>
+    <p>
+      Alternately, if you want to run the same thttpd binary on multiple
+      machines, and want to build in alternate names for some or all of
+      them, you can define a list of canonical name to altername name
+      mappings.  thttpd seatches the list and when it finds a match on
+      the canonical name, that alternate name gets used.  If no match
+      is found, the canonical name gets used.
+    </p>
+    <p>
+      If both SERVER_NAME and SERVER_NAME_LIST are defined here, thttpd searches
+      the list as above, and if no match is found then SERVER_NAME gets used.
+    </p>
+    <p>
+      In any case, if thttpd is started with the -h flag, that name always
+      gets used.
+    </p>
+
+    <h4><a name="SHOW_SERVER_VERSION">SHOW_SERVER_VERSION</a></h4>
+    <p>
+      Undefine this if you want thttpd to hide its specific version
+      when returning into to browsers.  Instead it'll just say "thttpd" with
+      no version.
+    </p>
+
+    <h4><a name="ALWAYS_CHROOT">ALWAYS_CHROOT</a></h4>
+    <p>
+      Define this if you want to always chroot(), without having
+      to give the -r command line flag.  Some people like this as a security
+      measure, to prevent inadvertant exposure by accidentally running without -r.
+      You can still disable it at runtime with the -nor flag.
+    </p>
+
+    <h4><a name="ALWAYS_VHOST">ALWAYS_VHOST</a></h4>
+    <p>
+      Define this if you want to always do virtual hosting, without
+      having to give the -v command line flag.  You can still disable it at
+      runtime with the -nov flag.
+    </p>
+
+    <h4><a name="VHOST_DIRLEVELS">VHOST_DIRLEVELS</a></h4>
+    <p>
+      If you're using the vhost feature and you have a LOT of
+      virtual hostnames (like, hundreds or thousands), you will want to
+      enable this feature.  It avoids a problem with most Unix filesystems,
+      where if there are a whole lot of items in a directory then name lookup
+      becomes very slow.  This feature makes thttpd use subdirectories
+      based on the first characters of each hostname.  You can set it to use
+      from one to three characters.  If the hostname starts with "www.", that
+      part is skipped over.  Dots are also skipped over, and if the name isn't
+      long enough then "_"s are used.  Here are some examples of how hostnames
+      would get turned into directory paths, for each different setting:
+    </p>
+    <blockquote><pre><code>
+1: www.acme.com ->    a/www.acme.com
+1: foobar.acme.com -> f/foobar.acme.com
+2: www.acme.com ->    a/c/www.acme.com
+2: foobar.acme.com -> f/o/foobar.acme.com
+3: www.acme.com ->    a/c/m/www.acme.com
+3: foobar.acme.com -> f/o/o/foobar.acme.com
+3: m.tv ->            m/t/v/m.tv
+4: m.tv ->            m/t/v/_/m.tv
+    </code></pre></blockquote>
+    <p>
+      Note that if you compile this setting in but then forget to set up
+      the corresponding subdirectories, the only error indication you'll
+      get is a "404 Not Found" when you try to visit a site.  So be careful.
+    </p>
+
+    <h4><a name="ALWAYS_GLOBAL_PASSWD">ALWAYS_GLOBAL_PASSWD</a></h4>
+    <p>
+      Define this if you want to always use a global passwd file, 
+      without having to give the -P command line flag.  You can still disable
+      it at runtime with the -noP flag.
+    </p>
+
+    <h4><a name="DEFAULT_USER">DEFAULT_USER</a></h4>
+    <p>
+      When started as root, the default username to switch to after
+      initializing.  If this user (or the one specified by the -u flag)
+      does not exist, the program will refuse to run.
+      A typical values is "nobody".
+    </p>
+
+    <h4><a name="USE_USER_DIR">USE_USER_DIR</a></h4>
+    <p>
+      When started as root, the program can automatically chdir()
+      to the home directory of the user specified by -u or <a href="#DEFAULT_USER">DEFAULT_USER</a>.
+      An explicit -d still overrides this.
+    </p>
+
+    <h4><a name="EXPLICIT_ERROR_PAGES">EXPLICIT_ERROR_PAGES</a></h4>
+    <p>
+      If this is defined, some of the built-in error pages will
+      have more explicit information about exactly what the problem is.
+      Some sysadmins don't like this, for security reasons.
+    </p>
+
+    <h4><a name="ERR_DIR">ERR_DIR</a></h4>
+    <p>
+      Subdirectory for custom error pages.  The error filenames are
+      $WEBDIR/$ERR_DIR/err%d.html - if virtual hosting is enabled then
+      $WEBDIR/hostname/$ERR_DIR/err%d.html is searched first.  This allows
+      different custom error pages for each virtual hosting web server.  If
+      no custom page for a given error can be found, the built-in error page
+      is generated.  If ERR_DIR is not defined at all, only the built-in error
+      pages will be generated.
+    </p>
+
+    <h4><a name="ERR_APPEND_SERVER_INFO">ERR_APPEND_SERVER_INFO</a></h4>
+    <p>
+      Define this if you want a standard HTML tail containing
+      $SERVER_SOFTWARE and $SERVER_ADDRESS to be appended to the custom error
+      pages.  (It is always appended to the built-in error pages.)
+    </p>
+
+    <h4><a name="CGI_NICE">CGI_NICE</a></h4>
+    <p>
+      nice(2) value to use for CGI programs.  If this is left
+      undefined, CGI programs run at normal priority.
+      A typical value, if defined, is 10.
+    </p>
+
+    <h4><a name="CGI_PATH">CGI_PATH</a></h4>
+    <p>
+      $PATH to use for CGI programs.
+      A typical value is "/usr/local/bin:/usr/ucb:/bin:/usr/bin".
+    </p>
+
+    <h4><a name="CGI_LD_LIBRARY_PATH">CGI_LD_LIBRARY_PATH</a></h4>
+    <p>
+      If defined, $LD_LIBRARY_PATH to use for CGI programs.
+      A typical value, if defined, is "/usr/local/lib:/usr/lib".
+    </p>
+
+    <h4><a name="OCCASIONAL_TIME">OCCASIONAL_TIME</a></h4>
+    <p>
+      How often to run the occasional cleanup job.
+      A typical value is 120 (two minutes).
+    </p>
+
+    <h4><a name="STATS_TIME">STATS_TIME</a></h4>
+    <p>
+      Seconds between stats syslogs.  If this is undefined then
+      no stats are accumulated and no stats syslogs are done.
+      A typical value is 3600 (an hour).
+    </p>
+
+    <h4><a name="DESIRED_MAX_MAPPED_FILES">DESIRED_MAX_MAPPED_FILES</a></h4>
+    <p>
+      The mmap cache tries to keep the total number of mapped
+      files below this number, so you don't run out of kernel file descriptors.
+      If you have reconfigured your kernel to have more descriptors, you can
+      raise this and thttpd will keep more maps cached.  However it's not
+      a hard limit, thttpd will go over it if you really are accessing
+      a whole lot of files.
+      A typical value is 2000.
+    </p>
+
+    <h4><a name="DESIRED_MAX_MAPPED_BYTES">DESIRED_MAX_MAPPED_BYTES</a></h4>
+    <p>
+      The mmap cache also tries to keep the total mapped bytes
+      below this number, so you don't run out of address space.  Again
+      it's not a hard limit, thttpd will go over it if you really are
+      accessing a bunch of large files.
+      A typical value is 1000000000.
+    </p>
+
+    <h4><a name="CGI_BYTECOUNT">CGI_BYTECOUNT</a></h4>
+    <p>
+      When throttling CGI programs, we don't know how many bytes
+      they send back to the client because it would be inefficient to
+      interpose a counter.  CGI programs are much more expensive than
+      regular files to serve, so we set an arbitrary and high byte count
+      that gets applied to all CGI programs for throttling purposes.
+    </p>
+    <p>
+      A typical value is 200000.
+    </p>
+
+    <h4><a name="DEFAULT_PORT">DEFAULT_PORT</a></h4>
+    <p>
+      The default port to listen on.  80 is the standard HTTP port.
+    </p>
+
+    <h4><a name="INDEX_NAMES">INDEX_NAMES</a></h4>
+    <p>
+      A list of index filenames to check.
+      The files are searched for in this order.
+      A typical value is "index.html", "index.htm", "index.cgi".
+    </p>
+
+    <h4><a name="GENERATE_INDEXES">GENERATE_INDEXES</a></h4>
+    <p>
+      If this is defined then thttpd will automatically generate
+      index pages for directories that don't have an explicit index file.
+      If you want to disable this behavior site-wide, perhaps for security
+      reasons, just undefine this.  Note that you can disable indexing of
+      individual directories by merely doing a "chmod 711" on them - the
+      standard Unix file permission to allow file access but disable "ls".
+    </p>
+
+    <h4><a name="LOG_UNKNOWN_HEADERS">LOG_UNKNOWN_HEADERS</a></h4>
+    <p>
+      Whether to log unknown request headers.  Most sites will not
+      want to log them, which will save them a bit of CPU time.
+    </p>
+
+    <h4><a name="FLUSH_LOG_EVERY_TIME">FLUSH_LOG_EVERY_TIME</a></h4>
+    <p>
+      Whether to fflush() the log file after each request.  If
+      this is turned off there's a slight savings in CPU cycles.
+    </p>
+
+    <h4><a name="THROTTLE_TIME">THROTTLE_TIME</a></h4>
+    <p>
+      Time between updates of the throttle table's rolling averages.
+      A typical value is 60.
+    </p>
+
+    <h4><a name="LISTEN_BACKLOG">LISTEN_BACKLOG</a></h4>
+    <p>
+      The listen() backlog queue length.  The 1024 doesn't actually
+      get used, the kernel uses its maximum allowed value.  This is a config
+      parameter only in case there's some OS where asking for too high a queue
+      length causes an error.  Note that on many systems the maximum length is
+      way too small - see
+      <a href="http://www.acme.com/software/thttpd/notes.html#throttle">http://www.acme.com/software/thttpd/notes.html</a>
+    </p>
+
+    <h4><a name="MAXTHROTTLENUMS">MAXTHROTTLENUMS</a></h4>
+    <p>
+      Maximum number of throttle patterns that any single URL can
+      be included in.  This has nothing to do with the number of throttle
+      patterns that you can define, which is unlimited.
+      A typical value is 50.
+    </p>
+
+    <h4><a name="SPARE_FDS">SPARE_FDS</a></h4>
+    <p>
+      Number of file descriptors to reserve for uses other than
+      connections.  Currently this is 5, representing one for the listen fd,
+      one for dup()ing at connection startup time, one for reading
+      the file, one for syslog, and one possibly for the log file.
+    </p>
+
+    <h4><a name="LINGER_TIME">LINGER_TIME</a></h4>
+    <p>
+      How many milliseconds to leave a connection open while doing a
+      lingering close.
+      A typical value is 500.
+    </p>
+
+    <h4><a name="MAX_LINKS">MAX_LINKS</a></h4>
+    <p>
+      Maximum number of symbolic links to follow before
+      assuming there's a loop.
+      A typical value is 32.
+    </p>
+
+    <h4><a name="MIN_WOULDBLOCK_DELAY">MIN_WOULDBLOCK_DELAY</a></h4>
+    <p>
+      You don't even want to know.
+    </p>
+
+    <hr class="thick">
+
+    <a href="http://validator.w3.org/check?uri=referer"><img class="logo" width="88" height="31" border="0" src="/resources/images/valid-html401-gold.png" alt="valid HTML"></a>
+
+    <p>
+      <a href="http://www.acme.com/">ACME Labs</a> / <a href="http://www.acme.com/software/">Software</a> / <a href="./">thttpd</a><br>
+      <a href="/mailto/?id=wa"><img class="mailto" src="/mailto/wa.gif" alt="email"></a>
+    </p>
+
+  </body>
+
+</html>

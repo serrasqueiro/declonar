@@ -1,0 +1,76 @@
+# (c)2017  Playreef Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+
+prefix =	/usr/local
+exec_prefix =	${prefix}
+BINDIR =	${exec_prefix}/sbin
+WEBDIR =	$(prefix)/www
+CGIBINDIR =	$(WEBDIR)/cgi-bin
+MANDIR =	${prefix}/man
+
+CC =		gcc
+CCOPT =		-O2
+DEFS =		 -DHAVE__PROGNAME=1 -DHAVE_FCNTL_H=1 -DHAVE_GRP_H=1 -DHAVE_MEMORY_H=1 -DHAVE_PATHS_H=1 -DHAVE_POLL_H=1 -DHAVE_SYS_POLL_H=1 -DTIME_WITH_SYS_TIME=1 -DHAVE_DIRENT_H=1 -DHAVE_LIBCRYPT=1 -DHAVE_STRERROR=1 -DHAVE_WAITPID=1 -DHAVE_VSNPRINTF=1 -DHAVE_DAEMON=1 -DHAVE_SETSID=1 -DHAVE_GETADDRINFO=1 -DHAVE_GETNAMEINFO=1 -DHAVE_GAI_STRERROR=1 -DHAVE_SIGSET=1 -DHAVE_ATOLL=1 -DHAVE_UNISTD_H=1 -DHAVE_GETPAGESIZE=1 -DHAVE_MMAP=1 -DHAVE_SELECT=1 -DHAVE_POLL=1 -DHAVE_TM_GMTOFF=1 -DHAVE_INT64T=1 -DHAVE_SOCKLENT=1
+INCLS =		-I..
+CFLAGS =	$(CCOPT) $(DEFS) $(INCLS)
+#STATICFLAG =	-static
+LDFLAGS =
+LDFLAGS += -L. -L../libmd5
+#LIBS =		-lcrypt
+LIBS =
+LIBS += -lmd5
+NETLIBS =
+INSTALL =	/usr/bin/install -c
+
+CLEANFILES =	*.o makeweb htpasswd
+
+
+
+.c.o:
+	@rm -f $@
+	$(CC) $(CFLAGS) -c $*.c
+
+all:		makeweb htpasswd
+
+makeweb:	makeweb.o
+	$(CC) $(LDFLAGS) makeweb.o -o makeweb $(LIBS) $(NETLIBS)
+
+makeweb.o:	makeweb.c ../config.h
+	$(CC) $(CFLAGS) -DWEBDIR=\"$(WEBDIR)\" -c makeweb.c
+
+htpasswd:	htpasswd.o
+	$(CC) $(LDFLAGS) $(STATICFLAG) htpasswd.o -o htpasswd $(LIBS)
+
+htpasswd.o:	htpasswd.c ../config.h
+	$(CC) $(CFLAGS) -DWEBDIR=\"$(WEBDIR)\" -c htpasswd.c
+
+
+install:	all
+	rm -f $(BINDIR)/makeweb $(BINDIR)/htpasswd $(BINDIR)/syslogtocern
+	cp makeweb $(BINDIR)/makeweb
+	chgrp $(WEBGROUP) $(BINDIR)/makeweb
+	chmod 2755 $(BINDIR)/makeweb
+	cp htpasswd $(BINDIR)/htpasswd
+	cp syslogtocern $(BINDIR)/syslogtocern
+	rm -f $(MANDIR)/man1/makeweb.1
+	cp makeweb.1 $(MANDIR)/man1/makeweb.1
+	rm -f $(MANDIR)/man1/htpasswd.1
+	cp htpasswd.1 $(MANDIR)/man1/htpasswd.1
+	rm -f $(MANDIR)/man8/syslogtocern.8
+	cp syslogtocern.8 $(MANDIR)/man8/syslogtocern.8
+
+clean:
+	rm -f $(CLEANFILES)
+
+distclean:
+	rm -f $(CLEANFILES) Makefile
+
