@@ -1,0 +1,21 @@
+# Hint files;
+# ignore any temporary .todo (TO DO) file:
+.todo.txt
+.to_do.txt
+
+# any directory named: int_path
+### int_path/
+# we want only a simple file:
+int_path/repo_guide.docx
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.so
+*.lo
+*.o
+*.obj
+# and backup files:
+*.*~
+
