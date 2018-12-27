@@ -1,0 +1,18 @@
+Calendar without adds, how-to
++++
+Here is a simple example of a calendar without adds.
+Get basic calendar from your favorite site, e.g.
+
+% wget -O cal.htm  "http://www.timeanddate.com/calendar/custom.html?year=2018&co
+untry=15&cols=0&lang=pt&fdow=1&wno=1&hol=4194841&cdt=4&holm=1&typ=0&display=3&df
+=1"
+
+% gunweb dump cal.htm -d cal.ht_
+
+% cp cal.ht_ cal.ht2 ; vi cal.ht2
+#       add 'base href'...!
+
+% diff cal.ht_ cal.ht2
+7a8
+> <base href=http://www.timeanddate.com/>
+
