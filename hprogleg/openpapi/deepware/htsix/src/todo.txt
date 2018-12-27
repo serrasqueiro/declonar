@@ -1,0 +1,11 @@
+% make CC_BASIC=-DDEBUG
+
+% valgrind ./htsix head  t.co/GaJ3aXYNxc
+
+
+% ./htsix   -p 123  -v -v  -Vv first second
+
+% ./htsix head -v -1 -d 9 192.168.1.9
+
+% ./htsix head -p 8080 -v -1 -d 9 192.168.1.9/Makefile
+
