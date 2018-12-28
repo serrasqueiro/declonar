@@ -55,6 +55,7 @@ Usage:\n\
 int parse_options (FILE* fRepErr, int argc, char** argv, t_opts* opts)
 {
  int i=0;
+ int iter;
  short iRaw, nRaw = 0;
  const int skipMe = INT_MAX_32bit-1;
  const char* str;
@@ -71,7 +72,8 @@ int parse_options (FILE* fRepErr, int argc, char** argv, t_opts* opts)
      }
      opts->rawOpts[ nRaw ] = argv[ i ];
      for (chrIdx=0; chrIdx<strlen( str ); chrIdx++) {
-       for (int iter=1; pTuples[iter].shortOpt[0]; iter++) {
+       int iter = 1;
+       for ( ; pTuples[iter].shortOpt[0]; iter++) {
          if ( chrIdx==0 ) {
 	   if ( strcmp(str, pTuples[iter].shortOpt)==0 || strcmp(str, pTuples[iter].longOpt)==0 ) {
 	     optIdx = iter;
@@ -126,7 +128,7 @@ int parse_options (FILE* fRepErr, int argc, char** argv, t_opts* opts)
  for (iRaw=1; iRaw<=nRaw; iRaw++) {
    oprint("rawOpts[%d]={%s}\n", iRaw, opts->rawOpts[ iRaw ]);
  }
- for (int iter=1; pTuples[iter].shortOpt[0]; iter++) {
+ for (iter=1; pTuples[iter].shortOpt[0]; iter++) {
    oprint("\npTuples[%d]:\n", iter);
    oprint("%-4s  %s; %c default num: %d, default str: {%s}\n",
 	  pTuples[iter].shortOpt,
@@ -136,7 +138,7 @@ int parse_options (FILE* fRepErr, int argc, char** argv, t_opts* opts)
 	  pTuples[iter].strDefault);
    oprint("\t%s\n", pTuples[iter].valueStr);
  }
- for (int i=1; i<=opts->numArgs; i++) {
+ for (i=1; i<=opts->numArgs; i++) {
    oprint("Arg#%-2d/%d %s\n", i, argc-1, opts->args[ i ]);
  }
  return 0;
@@ -145,11 +147,12 @@ int parse_options (FILE* fRepErr, int argc, char** argv, t_opts* opts)
 
 t_opt_tuple* find_option (const char* longAbbr)
 {
+ int idx=1;
  t_opt_tuple* pResult;
  const char* find;
  const char* strOpt;
  c_assert(longAbbr && longAbbr[0],"find_option()\n");
- for (int idx=1; ; idx++) {
+ for ( ; ; idx++) {
    strOpt = pTuples[idx].longOpt;
    if ( strOpt==NULL ) break;
    find = strstr(strOpt, longAbbr);
