@@ -5,3 +5,7 @@ doc/             Currently empty.
 
 tweb_services/   'tweb' http server.
 
+hprogleg/        Legacy simple (unfinished) C programs.
+
+dupileg/         Nothing but simple scripts (e.g. 'picsa_grep.py').
+
