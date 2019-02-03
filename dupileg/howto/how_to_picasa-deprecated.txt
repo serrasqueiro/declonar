@@ -1,0 +1,32 @@
+Log-in to your Google account, then click:
+	https://picasaweb.google.com/data/feed/api/user/default
+Note:
+	- The Picasa API is deprecated. See https://developers.google.com/picasa-web/ for more details and the migration guide.
+
+
+All photos within an album:
+	https://picasaweb.google.com/data/feed/api/user/default/albumid/__[albumID]__
+
+Example:
+  a) ENTRY:
+	https://picasaweb.google.com/data/entry/api/user/$PUID/albumid/6593046837553851105
+  b) FEED:
+	https://picasaweb.google.com/data/feed/api/user/$PUID/albumid/6593046837553851105
+
+My own album list (as user $PUID):
+	https://picasaweb.google.com/$PUID
+
+
+List programmatically, .net API way:
+>>>
+PhotoQuery query = new PhotoQuery(PicasaQuery.CreatePicasaUri(username, albumid));
+
+PicasaFeed feed = service.Query(query);
+
+foreach (PicasaEntry entry in feed.Entries)
+{
+    Console.WriteLine(entry.Title.Text);
+}
+<<<
+
+
