@@ -15,6 +15,13 @@ import sys
 # test_picsa_grep -- Test module
 #
 def test_picsa_grep (out, args):
+  """Basic picasa API
+	% python3 picsa_grep.py -v picasa_xml
+     However picasa API is getting deprecated by Google:
+	see also https://developers.google.com/picasa-web/
+
+     So, this code/ script got rather obsolete.
+  """
   params = args
   info = None
   verbose = 0
