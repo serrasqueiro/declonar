@@ -26,9 +26,25 @@ Options are:\n\
 }
 
 
+/* Basic aux. functions
+ */
+void init_opt_hshow (t_opt_hshow* st)
+{
+ b_assert(st, "?!");
+ st->verbose = 0;
+ st->minSize = 1;
+ st->lines = 0;
+ st->strFilePath = NULL;
+ st->zero = 0;
+ st->hashgram = NULL;
+}
+
+
 /* Forward declarations
  */
-int hash_dump (FILE* fOut, t_bool isStdin, char** args) ;
+int hash_dump (FILE* fOut, t_bool isStdin, char** args, t_opt_hshow* ptrShow) ;
+int hash_hist (FILE* fOut, FILE* fIn, unsigned binSize, t_opt_hshow* ptrShow) ;
+
 
 
 
@@ -37,17 +53,42 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** args) ;
 int run (const char* prog, const char* strCmd, int nArgs, char** args)
 {
  int code = -1;
+ int verbose = 0;
+ FILE* fIn = stdin;
  FILE* fOut = stdout;
+ FILE* fErr = stderr;
  t_bool isStdin;
  char** pFiles;
+ const char* inName = NULL;
  const t_bool isMainProg = strcmp( prog, BASE_PROG_NAME )==0;
+ unsigned binSize = 1000;
+ t_opt_hshow optShow;
+
+ init_opt_hshow( &optShow );
+ optShow.verbose = verbose;
 
  bprint("prog=<%s>, strCmd=<%s>, nArgs=%d, 1st:<%s>\n",
 	prog, strCmd, nArgs, args[ 0 ]);
  b_assert(isMainProg,"?");
- b_assert(args,"args");
 
- pFiles = args+1;
+ args++;
+
+ for ( ; args[ 0 ]!=NULL; ) {
+     bprint("Debug: checking args#0: '%s'\n", args[0]);
+     if ( strcmp( args[ 0 ], "-n" )==0 ) {
+	 b_assert(args[ 1 ], "-n?");
+	 optShow.minSize = atoi( args[ 1 ] );
+	 b_assert(optShow.minSize>0 && optShow.minSize<9, "-n invalid");
+	 args += 2;
+	 continue;
+     }
+     if ( args[ 0 ][ 0 ]=='-' ) {
+	 usage( prog );
+     }
+     break;
+ }
+
+ pFiles = args;
  isStdin = pFiles[ 0 ]==NULL;
  if ( isStdin ) {
      pFiles = (char**)malloc( 2*sizeof(char*) );
@@ -55,7 +96,35 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      pFiles[ 1 ] = NULL;
  }
  if ( strcmp( strCmd, "dump" )==0 ) {
-     code = hash_dump( fOut, isStdin, pFiles );
+     optShow.verbose = 1;
+     code = hash_dump( fOut, isStdin, pFiles, &optShow );
+     if ( code==0 ) {
+	 fprintf(fErr, "Last: %s, %d line(s)\n", optShow.strFilePath, optShow.lines);
+     }
+ }
+ if ( strcmp( strCmd, "hist" )==0 ) {
+     t_uint32 h;
+     inName = pFiles[ 0 ];
+     if ( !isStdin ) {
+	 fIn = fopen( inName, "rt" );
+     }
+     code = hash_hist( fOut, fIn, binSize, &optShow );
+     if ( !isStdin ) {
+	 fclose( fIn );
+     }
+     for (h=0; h<hist_prime_size( binSize ); h++) {
+	 int num =  optShow.hashgram[ h ].count;
+	 if ( num > 3 ) {
+	     fprintf(fErr, "# %d %s\n", num, optShow.hashgram[ h ].str);
+	 }
+     }
+     for (h=0; h<hist_prime_size( binSize ); h++) {
+	 if ( optShow.hashgram[ h ].str ) {
+	     free( optShow.hashgram[ h ].str );
+	 }
+     }
+     fprintf(fErr, "Empties: %d (lines: %d)\n", optShow.zero, optShow.lines);
+     free( optShow.hashgram );
  }
  if ( isStdin ) {
      free( pFiles[ 0 ] );
@@ -68,7 +137,7 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
 }
 
 
-int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles)
+int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
 {
  FILE* fIn = stdin;
  FILE* fErr = stderr;
@@ -84,6 +153,7 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles)
  for ( ; (name = pFiles[i])!=NULL; i++) {
      int lines = 0;
      bprint("Reading: %s\n", name);
+     ptrShow->strFilePath = name;
      if ( !isStdin ) {
 	 fIn = fopen( name, "rb" );
      }
@@ -94,7 +164,7 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles)
      for ( ; fgets( buf, sizeof(buf)-1, fIn ); ) {
 	 lines++;
 	 aLen = strlen( buf );
-	 b_assert(aLen>0,"aLen>0");
+	 b_assert(aLen>0, "aLen>0");
 	 aLen--;
 	 c = buf[ aLen ];
 	 if ( c!='\n' ) {
@@ -102,8 +172,20 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles)
 	     break;
 	 }
 	 buf[ aLen ] = 0;
-	 h = hd_str_hash( buf );
+	 h = lang_str_hash( buf );
+	 if ( aLen<=0 || buf[ 0 ]=='#' ) {
+	     if ( ptrShow->verbose>0 ) {
+		 fprintf(fErr, "Ignored entry: '%s'\n", buf);
+	     }
+	     continue;
+	 }
+	 if ( aLen < ptrShow->minSize ) {
+	     invalid++;
+	     fprintf(fErr, "Entry too short: '%s'\n", buf);
+	     break;
+	 }
 	 fprintf(fOut, "%-10ld\t%s\n", h, buf);
+	 /* other style: fprintf(fOut, "%s\t%10ld\n", buf, h) */
      }
      if ( !isStdin ) {
 	 fclose( fIn );
@@ -113,10 +195,54 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles)
 	 fprintf(fErr,"Invalid: %s\n", name);
      }
      else {
-	 fprintf(fErr, "Read %s: %d line(s)\n", name, lines);
+	 ptrShow->lines += lines;
      }
  }
  return nBogus>0;
+}
+
+
+int hash_hist (FILE* fOut, FILE* fIn, unsigned binSize, t_opt_hshow* ptrShow)
+{
+ char buf[ 1024 ];
+ int aLen;
+ int n = ptrShow->minSize;
+ t_opt_hist* lista;
+ const char* info;
+ const char* fmtDigStr = "03";
+ const char* shown;
+ t_uint32 h;
+ t_uint32 empties = 0;
+
+ b_assert(n==4, "n==4");
+
+ lista = (t_opt_hist*)calloc( binSize, sizeof(t_opt_hist) );
+ b_assert(lista, "lista");
+ ptrShow->hashgram = lista;
+
+ for ( ; fgets( buf, sizeof(buf)-1, fIn ); ) {
+     aLen = strlen( buf );
+     b_assert(aLen>0, "aLen>0");
+     aLen--;
+     buf[ aLen ] = 0;
+     h = lang_str_hash( buf );
+     b_assert(h<binSize, "h<binSize");
+     ptrShow->lines++;
+     opt_hist_add( &lista[ h ], buf );
+ }
+ snprintf(buf, sizeof(buf), "%%%sld\t%%s\n", fmtDigStr);
+ for (h=0; h<hist_prime_size( binSize ); h++) {
+     info = lista[ h ].str;
+     shown = info ? info : "-";
+     if ( fOut ) {
+	 fprintf(fOut, buf, h, shown);
+     }
+     if ( info==NULL ) {
+	 empties++;
+     }
+ }
+ ptrShow->zero = empties;
+ return 0;
 }
 
 
