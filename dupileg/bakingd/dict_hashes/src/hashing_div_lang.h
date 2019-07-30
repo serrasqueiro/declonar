@@ -17,6 +17,9 @@
 #define bprint(args...) ;
 #endif /* ~DEBUG */
 
+#define tFalse 0
+#define tTrue 1
+
 #define b_assert(cond,msg) { \
 	if ( (cond)==0 ) { fprintf(stderr,"%s:%d:%s\n",__FILE__,__LINE__,msg); exit(0); } \
     }
@@ -26,6 +29,7 @@ typedef char t_bool;
 
 typedef unsigned char t_uchar;
 typedef unsigned long t_uint32;
+typedef long t_int32;
 
 typedef struct {
     t_uint32 count;

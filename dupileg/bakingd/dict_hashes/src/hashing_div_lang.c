@@ -98,7 +98,7 @@ t_uint32 lang_aux_hash (const char* str, int aLen)
  char c;
  char* sec = (char*)malloc( newLen+3 );
  if ( factor>=2 ) {
-     for (i=0, j=aLen, k=aLen*2; i<aLen; i++) {
+     for (i=0, j=aLen, k=newLen-aLen; i<aLen; i++) {
 	 c = str[ i ];
 	 sec[ i ] = c;
 	 sec[ j++ ] = -c;
@@ -128,21 +128,51 @@ t_uint32 lang_aux_hash (const char* str, int aLen)
 t_uint32 lang_str_hash (const char* str)
 {
  t_uint32 h;
+ t_uint32 module = 0;
+ t_int32 skid = 0;
  int aLen;
  if ( str ) {
      aLen = strlen( str );
      switch ( aLen ) {
      case 2:
+	 module = HPRIME_10P3;
+	 if ( strcmp(str, "da")==0 ) {
+	     skid = 1;
+	 }
+	 break;
      case 3:
+	 if ( strcmp(str, "tem")==0 || strcmp(str, "tau")==0 ) {
+	     skid = -4;
+	 }
+	 if ( strcmp(str, "sub")==0 ) {
+	     skid = 2;
+	 }
+	 if ( strcmp(str, "sue")==0 ) {
+	     skid = -2;
+	 }
+	 if ( strcmp(str, "dar")==0 ) {
+	     skid = 6;
+	 }
+	 if ( strcmp(str, "par")==0 ) {
+	     skid = 1;
+	 }
+	 if ( strcmp(str, "num")==0 ) {
+	     skid = -1;
+	 }
+	 /* No break here! */
      case 4:
-	 h = (t_uint32)lang_aux_hash( str, aLen ) % HPRIME_10P3;
+	 module = HPRIME_10P3;
 	 break;
      case 5:
-	 h = (t_uint32)lang_aux_hash( str, aLen ) % HPRIME_10P4;
+	 module = HPRIME_10P4;
 	 break;
      default:
 	 h = hd_str_hash( str );
 	 break;
+     }
+     if ( module>0 ) {
+	 h = (t_uint32)lang_aux_hash( str, aLen ) % module;
+	 h = (t_uint32)((t_int32)h + skid);
      }
  }
  else {

@@ -75,6 +75,11 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
 
  for ( ; args[ 0 ]!=NULL; ) {
      bprint("Debug: checking args#0: '%s'\n", args[0]);
+     if ( strcmp( args[ 0 ], "-v" )==0 ) {
+	 verbose++;
+	 args++;
+	 continue;
+     }
      if ( strcmp( args[ 0 ], "-n" )==0 ) {
 	 b_assert(args[ 1 ], "-n?");
 	 optShow.minSize = atoi( args[ 1 ] );
@@ -103,7 +108,11 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      }
  }
  if ( strcmp( strCmd, "hist" )==0 ) {
+     const int primeSize = hist_prime_size( binSize );
+     const int lowEnd = 4;
+     t_bool resumed = verbose==0;
      t_uint32 h;
+     int z;
      inName = pFiles[ 0 ];
      if ( !isStdin ) {
 	 fIn = fopen( inName, "rt" );
@@ -112,13 +121,25 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      if ( !isStdin ) {
 	 fclose( fIn );
      }
-     for (h=0; h<hist_prime_size( binSize ); h++) {
-	 int num =  optShow.hashgram[ h ].count;
-	 if ( num > 3 ) {
-	     fprintf(fErr, "# %d %s\n", num, optShow.hashgram[ h ].str);
+     if ( resumed ) {
+	 for (z=primeSize-1; z>=lowEnd; z--) {
+	     for (h=0; h<primeSize; h++) {
+		 int num =  optShow.hashgram[ h ].count;
+		 if ( num==z ) {
+		     fprintf(fErr, "# %d %s\n", num, optShow.hashgram[ h ].str);
+		 }
+	     }
 	 }
      }
-     for (h=0; h<hist_prime_size( binSize ); h++) {
+     else {
+	 for (h=0; h<primeSize; h++) {
+	     int num =  optShow.hashgram[ h ].count;
+	     if ( num > 3 ) {
+		 fprintf(fErr, "# %d %s\n", num, optShow.hashgram[ h ].str);
+	     }
+	 }
+     }
+     for (h=0; h<binSize; h++) {
 	 if ( optShow.hashgram[ h ].str ) {
 	     free( optShow.hashgram[ h ].str );
 	 }
@@ -185,7 +206,6 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
 	     break;
 	 }
 	 fprintf(fOut, "%-10ld\t%s\n", h, buf);
-	 /* other style: fprintf(fOut, "%s\t%10ld\n", buf, h) */
      }
      if ( !isStdin ) {
 	 fclose( fIn );
@@ -204,6 +224,7 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
 
 int hash_hist (FILE* fOut, FILE* fIn, unsigned binSize, t_opt_hshow* ptrShow)
 {
+ const t_bool showHash = tTrue;
  char buf[ 1024 ];
  int aLen;
  int n = ptrShow->minSize;
@@ -230,12 +251,22 @@ int hash_hist (FILE* fOut, FILE* fIn, unsigned binSize, t_opt_hshow* ptrShow)
      ptrShow->lines++;
      opt_hist_add( &lista[ h ], buf );
  }
- snprintf(buf, sizeof(buf), "%%%sld\t%%s\n", fmtDigStr);
+ if ( showHash ) {
+     snprintf(buf, sizeof(buf), "%%%sld\t#%%d %%s\n", fmtDigStr);
+ }
+ else {
+     snprintf(buf, sizeof(buf), "%%%sld\t%%s\n", fmtDigStr);
+ }
  for (h=0; h<hist_prime_size( binSize ); h++) {
      info = lista[ h ].str;
      shown = info ? info : "-";
      if ( fOut ) {
-	 fprintf(fOut, buf, h, shown);
+	 if ( showHash ) {
+	     fprintf(fOut, buf, h, ptrShow->hashgram[ h ].count, shown);
+	 }
+	 else {
+	     fprintf(fOut, buf, h, shown);
+	 }
      }
      if ( info==NULL ) {
 	 empties++;
