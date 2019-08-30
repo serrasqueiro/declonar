@@ -41,6 +41,7 @@ typedef struct {
     int minSize;
     int lines;
     const char* strFilePath;
+    char* strOutPat;
     int zero;
     t_opt_hist* hashgram;
 } t_opt_hshow;

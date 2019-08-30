@@ -42,6 +42,7 @@ void init_opt_hshow (t_opt_hshow* st)
  st->minSize = 1;
  st->lines = 0;
  st->strFilePath = NULL;
+ st->strOutPat = strdup( "letra_@.asc" );
  st->zero = 0;
  st->hashgram = NULL;
 }
@@ -86,6 +87,7 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      bprint("Debug: checking args#0: '%s'\n", args[0]);
      if ( strcmp( args[ 0 ], "-v" )==0 ) {
 	 verbose++;
+	 optShow.verbose++;
 	 args++;
 	 continue;
      }
@@ -93,6 +95,16 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
 	 b_assert(args[ 1 ], "-n?");
 	 optShow.minSize = atoi( args[ 1 ] );
 	 b_assert(optShow.minSize>0 && optShow.minSize<9, "-n invalid");
+	 args += 2;
+	 continue;
+     }
+     if ( strcmp( args[ 0 ], "-a" )==0 ) {
+	 b_assert(args[ 1 ], "-a?");
+	 free( optShow.strOutPat );
+	 optShow.strOutPat = strdup( args[ 1 ] );
+	 if ( strchr(optShow.strOutPat,'@')==NULL ) {
+	     usage( prog );
+	 }
 	 args += 2;
 	 continue;
      }
@@ -109,6 +121,7 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      pFiles[ 0 ] = strdup("-");
      pFiles[ 1 ] = NULL;
  }
+
  if ( strcmp( strCmd, "dump" )==0 ) {
      optShow.verbose = 1;
      code = hash_dump( fOut, isStdin, pFiles, &optShow );
@@ -117,7 +130,6 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      }
  }
  if ( strcmp( strCmd, "to-base" )==0 ) {
-     optShow.verbose = 1;
      code = to_base( fOut, isStdin, pFiles, &optShow );
      fprintf(fErr, "Code: %d\n", code);
  }
@@ -166,9 +178,13 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      free( pFiles[ 0 ] );
      free( pFiles );
  }
+ /* Free allocated option vars */
+ free( optShow.strOutPat );
+
  if ( code==-1 ) {
      usage( prog );
  }
+
  return code;
 }
 
@@ -241,17 +257,25 @@ int to_base (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
 {
  FILE* fIn = stdin;
  FILE* fErr = stderr;
+ FILE* fAsc = NULL;
  const char* name;
  const int verbose = ptrShow->verbose;
+ const char* outputPattern = ptrShow->strOutPat;
  t_uchar c, up, first, last='\0';
+ char ch;
  char buf[ 1024 ];
  int i = 0, idx, aLen;
+ int letra;
+ int sz;
  t_word* w;
  t_bool isOk;
  t_bool allUp;
+ t_set* pSet;
 
  for ( ; (name = pFiles[i])!=NULL; i++) {
-     printf("Reading: %s\n", name);
+     if ( verbose>0 ) {
+	 printf("Reading: %s\n", name);
+     }
      if ( !isStdin ) {
 	 fIn = fopen( name, "rb" );
      }
@@ -290,16 +314,18 @@ int to_base (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
        idx = (int)first - (int)'A';
        w = add_dict( &gDict, idx, (t_uchar*)buf );
        if ( w==NULL ) {
-	 fprintf(stderr, "Ignored duplicate word: '%s'\n", buf);
+	 if ( verbose>0 ) {
+	     fprintf(stderr, "Ignored duplicate word: '%s'\n", buf);
+	 }
        }
      }
      if ( !isStdin ) {
 	 fclose( fIn );
      }
+
      if ( verbose>0 ) {
-       int letra;
        for (letra=0; letra<26; letra++) {
-	 t_set* pSet = &gDict.rows[ letra ];
+	 pSet = &gDict.rows[ letra ];
 	 printf("Letter %c (%d):\t", letra+'A', (int)pSet->nElems);
 	 for (w=pSet->start; w; w=w->next) {
 	   printf("%s;", w->s);
@@ -307,6 +333,52 @@ int to_base (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
 	 }
 	 printf("\n");
        }
+     }
+
+     if ( outputPattern ) {
+	 char* s;
+	 char* outStr = strdup( outputPattern );
+	 b_assert(outStr, "outStr");
+	 s = strchr( outStr, '@' );
+	 if ( s ) {
+	     for (letra=0; letra<26; letra++) {
+		 ch = letra+'A';
+		 s[ 0 ] = ch;
+		 if ( verbose>0 ) {
+		     printf("%c: S is '%s'\n", ch, outStr);
+		 }
+		 fAsc = fopen( outStr, "w" );
+		 if ( fAsc ) {
+		     pSet = &gDict.rows[ letra ];
+		     for (sz=1; sz<=WORD_DICT_LIM; sz++) {
+			 for (w=pSet->bySize[ sz ]; w; w=w->next) {
+			     fprintf(fAsc, "%c %s\n", w->kind, w->s);
+			 }
+		     }
+		     fclose( fAsc );
+		 }
+	     }
+	     s[ 0 ] = '1';
+	     fAsc = fopen( outStr, "w" );
+	     for (letra=0; letra<26; letra++) {
+		 char* newStr = (char*)malloc( WORD_DICT_LIM * 10 );
+		 newStr[ 0 ] = 0;
+		 for (sz=1; sz<=WORD_DICT_LIM; sz++) {
+		     char b[ 64 ];
+		     int elems = 0;
+		     t_word* iter = iter=gDict.rows[ letra ].bySize[ sz ];
+		     for ( ; iter; iter=iter->next) {
+			 elems++;
+		     }
+		     sprintf(b, " %d;", elems);
+		     strcat(newStr, b);
+		 }
+		 fprintf(fAsc, "letter %c: %lu %s\n", letra+'A', (unsigned long)gDict.rows[ letra ].nElems, newStr);
+		 free( newStr );
+	     }
+	     fclose( fAsc );
+	 }
+	 free( outStr );
      }
  }
  return 0;
@@ -395,5 +467,7 @@ int main (int argc, char* argv[])
  }
  strCmd = argv[ 1 ];
  code = run( prog, strCmd, argc-1, argv+1 );
+ release_dict( &gDict );
+ /* Exit status */
  return code;
 }

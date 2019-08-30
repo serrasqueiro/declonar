@@ -5,6 +5,9 @@
 
 #include "hashing_div_lang.h"
 
+#define WORD_DICT_LIM 9
+
+
 typedef struct t_word_node {
     t_uint32 h;
     t_uchar kind;  /* n: normal-case; u: upper-case; x: other? */
@@ -16,6 +19,8 @@ typedef struct {
     t_uint32 nElems;
     t_word* start;
     t_word* end;
+    t_word* bySize[ WORD_DICT_LIM+1 ];
+    t_word* endSize[ WORD_DICT_LIM+1 ];
 } t_set;
 
 typedef struct {
@@ -26,6 +31,7 @@ typedef struct {
 /* External functions
  */
 extern void init_dict (t_word_dict* wDict) ;
+extern void release_dict (t_word_dict* wDict) ;
 
 extern t_word* add_dict (t_word_dict* wDict, int letra, t_uchar* wStr) ;
 
