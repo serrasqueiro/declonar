@@ -1,0 +1,25 @@
+
+# Resume taken from:
+#	https://docs.python.org/3/library/xml.etree.elementtree.html
+# (22.08.2019)
+
+import xml.etree.ElementTree as ET
+tree = ET.parse( "sample.xml" )
+root = tree.getroot()
+# Or directly from a string:
+root = ET.fromstring(country_data_as_string)
+
+rootTag = root.tag	# e.g. 'orderset'
+
+if True:
+  for child in root:
+    print(child.tag, child.attrib)
+  pass
+
+# interesting attributes:
+if True:
+  for neighbor in root.iter('neighbor'):
+    print(neighbor.attrib)
+  pass
+
+
