@@ -129,36 +129,14 @@ t_uint32 lang_str_hash (const char* str)
 {
  t_uint32 h;
  t_uint32 module = 0;
- t_int32 skid = 0;
  int aLen;
  if ( str ) {
      aLen = strlen( str );
      switch ( aLen ) {
      case 2:
 	 module = HPRIME_10P3;
-	 if ( strcmp(str, "da")==0 ) {
-	     skid = 1;
-	 }
 	 break;
      case 3:
-	 if ( strcmp(str, "tem")==0 || strcmp(str, "tau")==0 ) {
-	     skid = -4;
-	 }
-	 if ( strcmp(str, "sub")==0 ) {
-	     skid = 2;
-	 }
-	 if ( strcmp(str, "sue")==0 ) {
-	     skid = -2;
-	 }
-	 if ( strcmp(str, "dar")==0 ) {
-	     skid = 6;
-	 }
-	 if ( strcmp(str, "par")==0 ) {
-	     skid = 1;
-	 }
-	 if ( strcmp(str, "num")==0 ) {
-	     skid = -1;
-	 }
 	 /* No break here! */
      case 4:
 	 module = HPRIME_10P3;
@@ -172,7 +150,6 @@ t_uint32 lang_str_hash (const char* str)
      }
      if ( module>0 ) {
 	 h = (t_uint32)lang_aux_hash( str, aLen ) % module;
-	 h = (t_uint32)((t_int32)h + skid);
      }
  }
  else {

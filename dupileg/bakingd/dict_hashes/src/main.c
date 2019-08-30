@@ -10,6 +10,7 @@
 #define BASE_PROG_NAME "hashing_div"
 
 #include "hashing_div_lang.h"
+#include "nospell.h"
 
 
 void usage (const char* prog)
@@ -24,6 +25,12 @@ Options are:\n\
 ", prog);
  exit(0);
 }
+
+
+
+/* Globals
+ */
+static t_word_dict gDict;
 
 
 /* Basic aux. functions
@@ -44,7 +51,7 @@ void init_opt_hshow (t_opt_hshow* st)
  */
 int hash_dump (FILE* fOut, t_bool isStdin, char** args, t_opt_hshow* ptrShow) ;
 int hash_hist (FILE* fOut, FILE* fIn, unsigned binSize, t_opt_hshow* ptrShow) ;
-
+int to_base (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow) ;
 
 
 
@@ -70,6 +77,8 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
  bprint("prog=<%s>, strCmd=<%s>, nArgs=%d, 1st:<%s>\n",
 	prog, strCmd, nArgs, args[ 0 ]);
  b_assert(isMainProg,"?");
+
+ init_dict( &gDict );
 
  args++;
 
@@ -107,6 +116,12 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
 	 fprintf(fErr, "Last: %s, %d line(s)\n", optShow.strFilePath, optShow.lines);
      }
  }
+ if ( strcmp( strCmd, "to-base" )==0 ) {
+     optShow.verbose = 1;
+     code = to_base( fOut, isStdin, pFiles, &optShow );
+     fprintf(fErr, "Code: %d\n", code);
+ }
+
  if ( strcmp( strCmd, "hist" )==0 ) {
      const int primeSize = hist_prime_size( binSize );
      const int lowEnd = 4;
@@ -219,6 +234,82 @@ int hash_dump (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
      }
  }
  return nBogus>0;
+}
+
+
+int to_base (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
+{
+ FILE* fIn = stdin;
+ FILE* fErr = stderr;
+ const char* name;
+ const int verbose = ptrShow->verbose;
+ t_uchar c, up, first, last='\0';
+ char buf[ 1024 ];
+ int i = 0, idx, aLen;
+ t_word* w;
+ t_bool isOk;
+ t_bool allUp;
+
+ for ( ; (name = pFiles[i])!=NULL; i++) {
+     printf("Reading: %s\n", name);
+     if ( !isStdin ) {
+	 fIn = fopen( name, "rb" );
+     }
+     if ( fIn==NULL ) {
+	 fprintf(fErr, "Uops: %s\n", name);
+	 return 2;
+     }
+     for ( ; fgets( buf, sizeof(buf)-1, fIn ); ) {
+       c = buf[ aLen = strlen( buf )-1 ];
+       b_assert(c=='\n', "No NL?");
+       buf[ aLen ] = 0;
+       if ( verbose>=3 ) {
+	 printf("%s\n", buf);
+       }
+       allUp = tTrue;
+       for (idx=0, first='\0'; idx<aLen; idx++) {
+	 c = buf[ idx ];
+	 if ( c>='a' && c<='z' ) {
+	   up = c-32;
+	   allUp = tFalse;
+	 }
+	 else {
+	   up = c;
+	 }
+	 if ( idx==0 ) {
+	   first = up;
+	 }
+	 isOk = up>='A' && up<='Z';
+	 if ( isOk==tFalse ) {
+	   b_assert(c>' ', "(1) No blanks!");
+	   b_assert(c!='-' || allUp || (c=='-' && last>='a' && last<='z'),"(2) Dash (-)");
+	 }
+	 last = c;
+       }
+       b_assert(first>='A' && first<='Z', "(3) First chr.");
+       idx = (int)first - (int)'A';
+       w = add_dict( &gDict, idx, (t_uchar*)buf );
+       if ( w==NULL ) {
+	 fprintf(stderr, "Ignored duplicate word: '%s'\n", buf);
+       }
+     }
+     if ( !isStdin ) {
+	 fclose( fIn );
+     }
+     if ( verbose>0 ) {
+       int letra;
+       for (letra=0; letra<26; letra++) {
+	 t_set* pSet = &gDict.rows[ letra ];
+	 printf("Letter %c (%d):\t", letra+'A', (int)pSet->nElems);
+	 for (w=pSet->start; w; w=w->next) {
+	   printf("%s;", w->s);
+	   b_assert(w->next || (w->next==NULL && pSet->end==w), "end?");
+	 }
+	 printf("\n");
+       }
+     }
+ }
+ return 0;
 }
 
 

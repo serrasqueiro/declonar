@@ -8,6 +8,7 @@ CFLAGS=-g $(CC_BASIC)
 
 OBJS=\
 	hashing_div_lang.o \
+	nospell.o \
 	main.o
 
 .PHONY: goal target clean clearall
