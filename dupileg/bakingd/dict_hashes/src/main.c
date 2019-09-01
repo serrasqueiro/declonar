@@ -135,7 +135,7 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
  }
 
  if ( strcmp( strCmd, "hist" )==0 ) {
-     const int primeSize = hist_prime_size( binSize );
+     const int verBinSize = binSize;
      const int lowEnd = 4;
      t_bool resumed = verbose==0;
      t_uint32 h;
@@ -149,8 +149,8 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
 	 fclose( fIn );
      }
      if ( resumed ) {
-	 for (z=primeSize-1; z>=lowEnd; z--) {
-	     for (h=0; h<primeSize; h++) {
+	 for (z=verBinSize-1; z>=lowEnd; z--) {
+	     for (h=0; h<verBinSize; h++) {
 		 int num =  optShow.hashgram[ h ].count;
 		 if ( num==z ) {
 		     fprintf(fErr, "# %d %s\n", num, optShow.hashgram[ h ].str);
@@ -159,7 +159,7 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
 	 }
      }
      else {
-	 for (h=0; h<primeSize; h++) {
+	 for (h=0; h<verBinSize; h++) {
 	     int num =  optShow.hashgram[ h ].count;
 	     if ( num > 3 ) {
 		 fprintf(fErr, "# %d %s\n", num, optShow.hashgram[ h ].str);
@@ -420,7 +420,7 @@ int hash_hist (FILE* fOut, FILE* fIn, unsigned binSize, t_opt_hshow* ptrShow)
  else {
      snprintf(buf, sizeof(buf), "%%%sld\t%%s\n", fmtDigStr);
  }
- for (h=0; h<hist_prime_size( binSize ); h++) {
+ for (h=0; h<binSize; h++) {
      info = lista[ h ].str;
      shown = info ? info : "-";
      if ( fOut ) {

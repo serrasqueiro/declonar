@@ -134,15 +134,17 @@ t_uint32 lang_str_hash (const char* str)
      aLen = strlen( str );
      switch ( aLen ) {
      case 2:
-	 module = HPRIME_10P3;
+	 module = HPRIME_10P3N;
 	 break;
      case 3:
+	 module = HPRIME_10P3N;
 	 /* No break here! */
      case 4:
-	 module = HPRIME_10P3;
+	 module = HPRIME_10P3N;
+	 /* No break here! */
 	 break;
      case 5:
-	 module = HPRIME_10P4;
+	 module = HPRIME_10P3N;
 	 break;
      default:
 	 h = hd_str_hash( str );
@@ -150,6 +152,9 @@ t_uint32 lang_str_hash (const char* str)
      }
      if ( module>0 ) {
 	 h = (t_uint32)lang_aux_hash( str, aLen ) % module;
+	 if ( h>=1000 ) {
+	     h = str[ 0 ] % HPRIME_10P3;
+	 }
      }
  }
  else {
