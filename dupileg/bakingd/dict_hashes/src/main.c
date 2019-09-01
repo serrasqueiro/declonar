@@ -322,64 +322,64 @@ int to_base (FILE* fOut, t_bool isStdin, char** pFiles, t_opt_hshow* ptrShow)
      if ( !isStdin ) {
 	 fclose( fIn );
      }
+ }
 
-     if ( verbose>0 ) {
-       for (letra=0; letra<26; letra++) {
+ if ( verbose>0 ) {
+     for (letra=0; letra<26; letra++) {
 	 pSet = &gDict.rows[ letra ];
 	 printf("Letter %c (%d):\t", letra+'A', (int)pSet->nElems);
 	 for (w=pSet->start; w; w=w->next) {
-	   printf("%s;", w->s);
-	   b_assert(w->next || (w->next==NULL && pSet->end==w), "end?");
+	     printf("%s;", w->s);
+	     b_assert(w->next || (w->next==NULL && pSet->end==w), "end?");
 	 }
 	 printf("\n");
-       }
      }
+ }
 
-     if ( outputPattern ) {
-	 char* s;
-	 char* outStr = strdup( outputPattern );
-	 b_assert(outStr, "outStr");
-	 s = strchr( outStr, '@' );
-	 if ( s ) {
-	     for (letra=0; letra<26; letra++) {
-		 ch = letra+'A';
-		 s[ 0 ] = ch;
-		 if ( verbose>0 ) {
-		     printf("%c: S is '%s'\n", ch, outStr);
-		 }
-		 fAsc = fopen( outStr, "w" );
-		 if ( fAsc ) {
-		     pSet = &gDict.rows[ letra ];
-		     for (sz=1; sz<=WORD_DICT_LIM; sz++) {
-			 for (w=pSet->bySize[ sz ]; w; w=w->next) {
-			     fprintf(fAsc, "%c %s\n", w->kind, w->s);
-			 }
-		     }
-		     fclose( fAsc );
-		 }
+ if ( outputPattern ) {
+     char* s;
+     char* outStr = strdup( outputPattern );
+     b_assert(outStr, "outStr");
+     s = strchr( outStr, '@' );
+     if ( s ) {
+	 for (letra=0; letra<26; letra++) {
+	     ch = letra+'A';
+	     s[ 0 ] = ch;
+	     if ( verbose>0 ) {
+		 printf("%c: S is '%s'\n", ch, outStr);
 	     }
-	     s[ 0 ] = '1';
 	     fAsc = fopen( outStr, "w" );
-	     for (letra=0; letra<26; letra++) {
-		 char* newStr = (char*)malloc( WORD_DICT_LIM * 10 );
-		 newStr[ 0 ] = 0;
+	     if ( fAsc ) {
+		 pSet = &gDict.rows[ letra ];
 		 for (sz=1; sz<=WORD_DICT_LIM; sz++) {
-		     char b[ 64 ];
-		     int elems = 0;
-		     t_word* iter = iter=gDict.rows[ letra ].bySize[ sz ];
-		     for ( ; iter; iter=iter->next) {
-			 elems++;
+		     for (w=pSet->bySize[ sz ]; w; w=w->next) {
+			 fprintf(fAsc, "%c %s\n", w->kind, w->s);
 		     }
-		     sprintf(b, " %d;", elems);
-		     strcat(newStr, b);
 		 }
-		 fprintf(fAsc, "letter %c: %lu %s\n", letra+'A', (unsigned long)gDict.rows[ letra ].nElems, newStr);
-		 free( newStr );
+		 fclose( fAsc );
 	     }
-	     fclose( fAsc );
 	 }
-	 free( outStr );
+	 s[ 0 ] = '1';
+	 fAsc = fopen( outStr, "w" );
+	 for (letra=0; letra<26; letra++) {
+	     char* newStr = (char*)malloc( WORD_DICT_LIM * 10 );
+	     newStr[ 0 ] = 0;
+	     for (sz=1; sz<=WORD_DICT_LIM; sz++) {
+		 char b[ 64 ];
+		 int elems = 0;
+		 t_word* iter = iter=gDict.rows[ letra ].bySize[ sz ];
+		 for ( ; iter; iter=iter->next) {
+		     elems++;
+		 }
+		 sprintf(b, " %d;", elems);
+		 strcat(newStr, b);
+	     }
+	     fprintf(fAsc, "letter %c: %lu %s\n", letra+'A', (unsigned long)gDict.rows[ letra ].nElems, newStr);
+	     free( newStr );
+	 }
+	 fclose( fAsc );
      }
+     free( outStr );
  }
  return 0;
 }

@@ -7,8 +7,13 @@
 #define HASH_DLANG_largestPrime 4294967291UL
 
 #define HPRIME_10P3 997		/* 10^3 */
+#define HPRIME_10P3N 1009
+
 #define HPRIME_10P4 9973	/* 10^4 */
+#define HPRIME_10P4N 10007
+
 #define HPRIME_10P5 99991	/* 10^5 */
+#define HPRIME_10P5N 100003
 
 
 #ifdef DEBUG
