@@ -112,8 +112,13 @@ t_word* set_add (t_set* aSet, t_uchar* wStr, int cache)
    aSet->nElems++;
    iter = aSet->end;
    b_assert(iter, "iter?");
-   iter->next = w;
-   aSet->end = w;
+   if ( iter==aSet->start ) {
+       // b_assert(aSet->nElems==1,"nElems")
+   }
+   else {
+       iter->next = w;
+       aSet->end = w;
+   }
    /* Update kind */
    w->kind = kind_from_str( wStr, wStr[ 0 ] );
    /* Update cache */
