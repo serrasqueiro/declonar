@@ -6,9 +6,10 @@
   Compatibility: python 3.
 """
 
-# pylint: disable=invalid-name, unused-variable
+# pylint: disable=invalid-name, unused-argument
 
 from zexcess import expand_adapt, ZSheets, ZTable
+from yglob import LPath
 from redito import xCharMap
 
 
@@ -40,7 +41,6 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
     Run command.
     """
     code = None
-    adapt = dict()
     verbose = 0
     outName = None
     while len( param ) > 0 and param[0].startswith("-"):
@@ -57,17 +57,33 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
             del param[ :2 ]
             continue
         return None
-    # Consolidate params
+    opts = {"out-name": outName,
+            "verbose": verbose,
+            }
     # Do command...
+    code = run_one_cmd(outFile, cmd, param, opts, debug)
+    return code
+
+
+def run_one_cmd(outFile, cmd, param, opts, debug):
+    """
+    Run one command.
+    """
+    code = None
+    verbose = opts["verbose"]
+    outName = opts["out-name"]
+    adapt = dict()
+    sep = ";" if verbose <= 0 else "\t"
     if cmd in ("show",
                "cat",
                ):
         if outName is not None:
             assert cmd == "cat"
             outFile = open(outName, "wb")
-        sep = ";" if verbose <= 0 else "\t"
         showOpts = (cmd, sep, adapt, verbose)
         code = show_table(outFile, param, showOpts, debug)
+        return code
+
     if cmd in ("smas",):
         if outName is not None:
             assert cmd == "cat"
@@ -97,12 +113,14 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
                 print(".\n\n")
         showOpts = (cmd, sep, adapt, verbose)
         code = show_table(outFile, param, showOpts, debug)
+        return code
+
+    if cmd == "stocks":
+        showOpts = (cmd, sep, adapt, verbose)
+        code = show_stocks(outFile, param, showOpts, debug)
     return code
 
 
-#
-# show_table
-#
 def show_table (outFile, param, showOpts, debug=0):
     """
     Show table.
@@ -116,10 +134,12 @@ def show_table (outFile, param, showOpts, debug=0):
     if param == []:
         return None
     cmd, sep, adapt, verbose = showOpts
-    inName = param[0]
+    a_path = LPath(param[0])
+    inName = a_path.to_os_path()
+    assert inName is not None
     rest = param[1:]
     z = ZSheets( inName, rest )
-    sheetTrip, cont = z.sheets, z.cont
+    _, cont = z.sheets, z.cont
     idx = 0
     for pages in cont:
         idx += 1
@@ -139,6 +159,30 @@ def show_table (outFile, param, showOpts, debug=0):
         if debug > 0:
             print("ZTable({}) minCol={}, maxCol={}".format( shown, t.minCol, t.maxCol ))
     return code
+
+
+def show_stocks(outFile, param, showOpts, debug):
+    _, sep, adapt, verbose = showOpts
+    a_path = LPath(param[0])
+    inName = a_path.to_os_path()
+    assert inName is not None
+    z = ZSheets( inName )
+    _, cont = z.sheets, z.cont
+    idx = 0
+    for pages in cont:
+        idx += 1
+        y = 0
+        t = ZTable( pages )
+        for entry in t.cont:
+            y += 1
+            aStr = t.alt_chr_separated( entry, adapt, sep )
+            s = xCharMap.simpler_ascii( aStr )
+            pre = "" if verbose <= 0 else "row#{}\t".format( y )
+            outFile.write("{}{}\n".format( pre, s ))
+        shown = "{}, {}/ #{}".format( inName, idx, len(cont) )
+        if debug > 0:
+            print("ZTable({}) minCol={}, maxCol={}".format( shown, t.minCol, t.maxCol ))
+    return 0
 
 
 if __name__ == "__main__":
