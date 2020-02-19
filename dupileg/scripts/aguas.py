@@ -6,8 +6,9 @@
   Compatibility: python 3.
 """
 
+# pylint: disable=invalid-name, unused-variable
 
-from zexcess import *
+from zexcess import expand_adapt, ZSheets, ZTable
 from redito import xCharMap
 
 
@@ -15,8 +16,16 @@ from redito import xCharMap
 # main()
 #
 def main (outFile, errFile, inArgs):
+    """
+    Main function.
+    :param outFile: stdout or other stream
+    :param errFile: stderr or other (error stream)
+    :param inArgs: input arguments
+    :return: error-code
+    """
     debug = 0
-    if inArgs==[]: return None
+    if inArgs == []:
+        return None
     cmd = inArgs[0]
     param = inArgs[1:]
     code = run_cmd(outFile, errFile, cmd, param, debug)
@@ -27,20 +36,23 @@ def main (outFile, errFile, inArgs):
 # run_cmd()
 #
 def run_cmd (outFile, errFile, cmd, param, debug=0):
+    """
+    Run command.
+    """
     code = None
     adapt = dict()
     verbose = 0
     outName = None
-    while len( param )>0 and param[0].startswith("-"):
+    while len( param ) > 0 and param[0].startswith("-"):
         if param[ 0 ].startswith("-v"):
             verbose += param[ 0 ].count( "v" )
             del param[ 0 ]
             continue
-        if param[ 0 ]=="--debug":
+        if param[ 0 ] == "--debug":
             debug = int( param[ 1 ] )
             del param[ :2 ]
             continue
-        if param[ 0 ]=="--text":
+        if param[ 0 ] == "--text":
             outName = param[ 1 ]
             del param[ :2 ]
             continue
@@ -51,14 +63,14 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
                "cat",
                ):
         if outName is not None:
-            assert cmd=="cat"
+            assert cmd == "cat"
             outFile = open(outName, "wb")
-        sep = ";" if verbose<=0 else "\t"
+        sep = ";" if verbose <= 0 else "\t"
         showOpts = (cmd, sep, adapt, verbose)
         code = show_table(outFile, param, showOpts, debug)
     if cmd in ("smas",):
         if outName is not None:
-            assert cmd=="cat"
+            assert cmd == "cat"
             outFile = open(outName, "wb")
         sep = "\t"
         adapt = {"*": {"replace": (("Data Inicial", "D.Inicio"),
@@ -71,15 +83,16 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
                        },
                  "D": {"replace": (("Test:ABC", "Test:XYZ"),),
                        },
-                 "D;E": {"replace": (("Consumido", "C."), # Consumido, e dias de consumo (column D and E)
+                 # Consumido, e dias de consumo (column D and E)
+                 "D;E": {"replace": (("Consumido", "C."),
                                      (" Consumo", ""),
-                                   ),
-                       },
+                                     ),
+                         },
                  }
         expand_adapt( adapt )
-        if debug>0:
+        if debug > 0:
             for x, y in adapt.items():
-                print("x:",x)
+                print("x:", x)
                 print(y)
                 print(".\n\n")
         showOpts = (cmd, sep, adapt, verbose)
@@ -90,9 +103,18 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
 #
 # show_table
 #
-def show_table (outFile, param, showOpts, debug):
+def show_table (outFile, param, showOpts, debug=0):
+    """
+    Show table.
+    :param outFile: output stream
+    :param param: parameters
+    :param showOpts: show options
+    :param debug: whether debug is required
+    :return: None, on parameter(s) fault, or an error-code
+    """
     code = 0
-    if param==[]: return None
+    if param == []:
+        return None
     cmd, sep, adapt, verbose = showOpts
     inName = param[0]
     rest = param[1:]
@@ -107,29 +129,29 @@ def show_table (outFile, param, showOpts, debug):
             y += 1
             aStr = t.alt_chr_separated( entry, adapt, sep )
             s = xCharMap.simpler_ascii( aStr )
-            pre = "" if verbose<=0 else "row#{}\t".format( y )
-            isBin = cmd=="cat"
+            pre = "" if verbose <= 0 else "row#{}\t".format( y )
+            isBin = cmd == "cat"
             if isBin:
                 outFile.write("{}{}\n".format( pre, s ).encode("ascii"))
             else:
                 outFile.write("{}{}\n".format( pre, s ))
         shown = "{}, {}/ #{}".format( inName, idx, len(cont) )
-        if debug>0:
+        if debug > 0:
             print("ZTable({}) minCol={}, maxCol={}".format( shown, t.minCol, t.maxCol ))
     return code
 
 
-#
-# Test suite
-#
 if __name__ == "__main__":
+    #
+    # Test suite
+    #
     import sys
-    code = main( sys.stdout, sys.stderr, sys.argv[ 1: ] )
-    if code is None:
+    CODE = main(sys.stdout, sys.stderr, sys.argv[ 1: ])
+    if CODE is None:
         print("""Commands are:
 show            Dump excel.
 cat             Same as dump, but do not encode to ascii.
 """)
-        code = 0
-    assert type( code )==int
-    sys.exit( code )
+        CODE = 0
+    assert isinstance(CODE, int)
+    sys.exit(CODE)
