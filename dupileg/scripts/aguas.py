@@ -9,7 +9,7 @@
 # pylint: disable=invalid-name, unused-argument
 
 from zexcess import expand_adapt, ZSheets, ZTable
-from yglob import LPath
+from tconfig.yglob import LPath
 from redito import xCharMap
 
 
