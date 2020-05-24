@@ -1,0 +1,38 @@
+
+
+Preparing aspell dictionary, pt:
+	giro_std/gnu_etc/aspell_info.txt
+
+% aspell -d pt_PT dump master > /mnt/tmp/words
+% cd /mnt/tmp ; gstrings -c normal words -o words.txt
+% cp words.txt h.txt
+% grep -i ^a words.txt > let_A.txt
+
+
+
+make CC_BASIC=-DDEBUG
+
+% ./hashing_div dump ../dicts/dictionary_pt-four.txt
+
+% ./hashing_div hist -n 4 /mnt/tmp/four
+
+% ./hashing_div hist -n 4 /mnt/tmp/mag > /mnt/tmp/rep
+
+% ./hashing_div hist -n 4 /mnt/tmp/mag 2> /mnt/tmp/out.txt > /mnt/tmp/rep
+
+
+# Valgrind!
+	% valgrind -v --show-leak-kinds=all --leak-check=full ./hashing_div to-base /mnt/tmp/h.txt
+
+
+# Complete
+for X in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; do grep -i ^$X words.txt > let_$X.txt ; done
+
+# Samples
+for X in A B C D E F G H I J K L M N O P Q R S T U V W X Y Z ; do grep -i ^$X words.txt | head -100 > sample_${X}.txt ; done
+
+# letra_A.asc	...
+% ./hashing_div to-base  -a /mnt/tmp/letra_@.asc /mnt/tmp/h.txt
+
+% ./hashing_div to-base -v -a /mnt/tmp/letra_@.asc /mnt/tmp/let_?.txt  > /mnt/tmp/out.txt  2> /mnt/tmp/report.txt
+

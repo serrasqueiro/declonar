@@ -1,6 +1,8 @@
 /* main.c (dict_hashes) -- (c)2019 Henrique Moreira
 
    Checks, runs, hashes dictionaries.
+
+   Obsoleted by: wordcupz/check_words.py
 */
 
 #include <stdio.h>
@@ -143,6 +145,10 @@ int run (const char* prog, const char* strCmd, int nArgs, char** args)
      inName = pFiles[ 0 ];
      if ( !isStdin ) {
 	 fIn = fopen( inName, "rt" );
+	 if ( fIn==NULL ) {
+	     fprintf(fErr, "Cannot open: %s\n", inName);
+	     return 2;
+	 }
      }
      code = hash_hist( fOut, fIn, binSize, &optShow );
      if ( !isStdin ) {
