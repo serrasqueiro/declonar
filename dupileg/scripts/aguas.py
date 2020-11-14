@@ -9,9 +9,13 @@
 # pylint: disable=invalid-name, unused-argument
 
 import sys
+from filing.dirs import Dirs
 from zexcess import expand_adapt, ZSheets, ZTable
 from tconfig.yglob import LPath
-from redito import xCharMap
+from waxpage.redit import char_map
+
+_DEBUG = 0
+SEWER_XLS_PNAME = "- Historico de Consumos.xlsx"
 
 
 def main():
@@ -22,6 +26,7 @@ def main():
 show            Dump excel.
 cat             Same as dump, but do not encode to ascii.
 smas            see README
+ls-smas         List candidates
 stocks          see README
 """)
     sys.exit(code if code else 0)
@@ -35,7 +40,7 @@ def main_run (outFile, errFile, inArgs):
     :param inArgs: input arguments
     :return: error-code
     """
-    debug = 0
+    debug = _DEBUG
     if inArgs == []:
         return None
     cmd = inArgs[0]
@@ -51,18 +56,18 @@ def run_cmd (outFile, errFile, cmd, param, debug=0):
     code = None
     verbose = 0
     outName = None
-    while len( param ) > 0 and param[0].startswith("-"):
-        if param[ 0 ].startswith("-v"):
-            verbose += param[ 0 ].count( "v" )
-            del param[ 0 ]
+    while param and param[0].startswith("-"):
+        if param[0].startswith("-v"):
+            verbose += param[0].count("v")
+            del param[0]
             continue
-        if param[ 0 ] == "--debug":
-            debug = int( param[ 1 ] )
-            del param[ :2 ]
+        if param[0] == "--debug":
+            debug = int(param[1])
+            del param[:2]
             continue
-        if param[ 0 ] == "--text":
-            outName = param[ 1 ]
-            del param[ :2 ]
+        if param[0] == "--text":
+            outName = param[1]
+            del param[:2]
             continue
         return None
     opts = {"out-name": outName,
@@ -82,6 +87,9 @@ def run_one_cmd(outFile, cmd, param, opts, debug):
     outName = opts["out-name"]
     adapt = dict()
     sep = ";" if verbose <= 0 else "\t"
+    sewer = SEWER_XLS_PNAME
+    assert sewer[:2] == "- "
+    assert sewer[2:].endswith(".xlsx")
     if cmd in ("show",
                "cat",
                ):
@@ -122,10 +130,42 @@ def run_one_cmd(outFile, cmd, param, opts, debug):
         code = show_table(outFile, param, showOpts, debug)
         return code
 
+    if cmd == "ls-smas":
+        found = list_smas(param, sewer, verbose)
+        code = 0 if found else 2
+        if verbose > 0:
+            if code:
+                print("Not found:", sewer)
+            else:
+                print(f"Hint:\n\nRun\n	python {__file__} smas '{found[2:]}'")
+        return code
+
     if cmd == "stocks":
         showOpts = (cmd, sep, adapt, verbose)
         code = show_stocks(outFile, param, showOpts, debug)
     return code
+
+
+def list_smas(param, ux_find, verbose) -> str:
+    """ List ...Consumos.xlsx """
+    found = ""
+    where = param if param else ["."]
+
+    def show(ux_str):
+        print(ux_str[2:])
+
+    for path in where:
+        here = ""
+        adir = Dirs(path)
+        for ux_str in adir.uxnames:
+            name = char_map.simpler_ascii(ux_str)
+            if name == ux_find:
+                show(name)
+                if not found:
+                    found, here = name, name
+        if verbose > 0:
+            print(f"{path} {ux_find}:", "found" if here else "not found")
+    return found
 
 
 def show_table (outFile, param, showOpts, debug=0):
@@ -155,7 +195,7 @@ def show_table (outFile, param, showOpts, debug=0):
         for entry in t.cont:
             y += 1
             aStr = t.alt_chr_separated( entry, adapt, sep )
-            s = xCharMap.simpler_ascii( aStr )
+            s = char_map.simpler_ascii( aStr )
             pre = "" if verbose <= 0 else "row#{}\t".format( y )
             isBin = cmd == "cat"
             if isBin:
@@ -184,7 +224,7 @@ def show_stocks(outFile, param, showOpts, debug):
         for entry in t.cont:
             y += 1
             aStr = t.alt_chr_separated(entry, adapt, sep)
-            s = xCharMap.simpler_ascii(aStr)
+            s = char_map.simpler_ascii(aStr)
             pre = "" if verbose <= 0 else "row#{}\t".format(y)
             outFile.write("{}{}\n".format(pre, s))
         shown = "{}, {}/ #{}".format(inName, idx, len(cont))
