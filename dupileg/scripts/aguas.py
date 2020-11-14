@@ -8,15 +8,26 @@
 
 # pylint: disable=invalid-name, unused-argument
 
+import sys
 from zexcess import expand_adapt, ZSheets, ZTable
 from tconfig.yglob import LPath
 from redito import xCharMap
 
 
-#
-# main()
-#
-def main (outFile, errFile, inArgs):
+def main():
+    """ Main """
+    code = main_run(sys.stdout, sys.stderr, sys.argv[1:])
+    if code is None:
+        print("""Commands are:
+show            Dump excel.
+cat             Same as dump, but do not encode to ascii.
+smas            see README
+stocks          see README
+""")
+    sys.exit(code if code else 0)
+
+
+def main_run (outFile, errFile, inArgs):
     """
     Main function.
     :param outFile: stdout or other stream
@@ -33,9 +44,6 @@ def main (outFile, errFile, inArgs):
     return code
 
 
-#
-# run_cmd()
-#
 def run_cmd (outFile, errFile, cmd, param, debug=0):
     """
     Run command.
@@ -86,7 +94,6 @@ def run_one_cmd(outFile, cmd, param, opts, debug):
 
     if cmd in ("smas",):
         if outName is not None:
-            assert cmd == "cat"
             outFile = open(outName, "wb")
         sep = "\t"
         adapt = {"*": {"replace": (("Data Inicial", "D.Inicio"),
@@ -105,7 +112,7 @@ def run_one_cmd(outFile, cmd, param, opts, debug):
                                      ),
                          },
                  }
-        expand_adapt( adapt )
+        expand_adapt(adapt)
         if debug > 0:
             for x, y in adapt.items():
                 print("x:", x)
@@ -138,13 +145,13 @@ def show_table (outFile, param, showOpts, debug=0):
     inName = a_path.to_os_path()
     assert inName is not None
     rest = param[1:]
-    z = ZSheets( inName, rest )
+    z = ZSheets(inName, rest)
     _, cont = z.sheets, z.cont
     idx = 0
     for pages in cont:
         idx += 1
         y = 0
-        t = ZTable( pages )
+        t = ZTable(pages)
         for entry in t.cont:
             y += 1
             aStr = t.alt_chr_separated( entry, adapt, sep )
@@ -162,40 +169,29 @@ def show_table (outFile, param, showOpts, debug=0):
 
 
 def show_stocks(outFile, param, showOpts, debug):
+    """ Show stocks from Excel file """
     _, sep, adapt, verbose = showOpts
     a_path = LPath(param[0])
     inName = a_path.to_os_path()
     assert inName is not None
-    z = ZSheets( inName )
+    z = ZSheets(inName)
     _, cont = z.sheets, z.cont
     idx = 0
     for pages in cont:
         idx += 1
         y = 0
-        t = ZTable( pages )
+        t = ZTable(pages)
         for entry in t.cont:
             y += 1
-            aStr = t.alt_chr_separated( entry, adapt, sep )
-            s = xCharMap.simpler_ascii( aStr )
-            pre = "" if verbose <= 0 else "row#{}\t".format( y )
-            outFile.write("{}{}\n".format( pre, s ))
-        shown = "{}, {}/ #{}".format( inName, idx, len(cont) )
+            aStr = t.alt_chr_separated(entry, adapt, sep)
+            s = xCharMap.simpler_ascii(aStr)
+            pre = "" if verbose <= 0 else "row#{}\t".format(y)
+            outFile.write("{}{}\n".format(pre, s))
+        shown = "{}, {}/ #{}".format(inName, idx, len(cont))
         if debug > 0:
-            print("ZTable({}) minCol={}, maxCol={}".format( shown, t.minCol, t.maxCol ))
+            print("ZTable({}) minCol={}, maxCol={}".format(shown, t.minCol, t.maxCol))
     return 0
 
 
 if __name__ == "__main__":
-    #
-    # Test suite
-    #
-    import sys
-    CODE = main(sys.stdout, sys.stderr, sys.argv[ 1: ])
-    if CODE is None:
-        print("""Commands are:
-show            Dump excel.
-cat             Same as dump, but do not encode to ascii.
-""")
-        CODE = 0
-    assert isinstance(CODE, int)
-    sys.exit(CODE)
+    main()
