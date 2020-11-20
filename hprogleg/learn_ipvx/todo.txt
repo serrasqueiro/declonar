@@ -1,0 +1,5 @@
+
+% wget http://beej.us/guide/bgnet/html/
+or
+% curl -o beej-us_help.htm http://beej.us/guide/bgnet/html/
+
