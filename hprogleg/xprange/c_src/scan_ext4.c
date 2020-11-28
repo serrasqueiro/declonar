@@ -2,6 +2,9 @@
 
 /* compile me using...
 	gcc -Werror -Wall scan_ext4.c -o scan_ext4
+
+   VDI:
+	dd if=softdiskdrive_001.vdi bs=1k skip=3073 of=/mnt/tmp/diskdrive.dev
 */
 
 #include <unistd.h>
@@ -29,14 +32,19 @@ int run_scan (const char* name, long* myoffset) {
   }
   while (read(fd, buf[sector&3], 512) > 0) {
     if (!memcmp(buf[sector&3] + 0x38, MAGIC, 2)) {
+      long a_offset = (long)offset;
+      sector -= 2;
       printf("Found a possible ext2 partition at sector: %lld (0x%llx)\n",
-	     sector-2, sector-2);
+	     sector, sector);
       empty1 = !memcmp(buf[(sector-2)&3], ZEROS, 512);
       empty2 = !memcmp(buf[(sector-1)&3], ZEROS, 512);
       if (empty1 && empty2) {
 	  printf("\t(first two sectors are empty :)\n");
       }
-      *myoffset = (long)offset;
+      *myoffset = a_offset;
+      if ((a_offset % 1024)==0) {
+	  printf("1 Kb offset: %ld\n", a_offset / 1024);
+      }
       return 0;
     }
     sector++;
